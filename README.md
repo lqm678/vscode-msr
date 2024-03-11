@@ -301,7 +301,7 @@ After [cooking alias scripts](#make-command-shortcuts-to-search-or-replace-in-or
   - `gfind-xxx` can only be used in a single git repository, not parent folder of multiple git repositories.
 - Difference between **gfind-xxx** and [**find-xxx**](#code-mining-without-or-with-little-knowledge) (same search results most time):
   - `find-xxx` may waste time on non-repo files thus **may not** provide accurate results as `gfind-xxx`.
-    - But `find-xxx` are **better(** than `gfind-xxx` in scenarios below:
+    - But `find-xxx` are **better** than `gfind-xxx` in scenarios below:
       - New files not in git - `gfind-xxx` cannot find them, use `find-xxx`.
       - Switched branches or search-folders or sub-modules(without `git-sm-xxx`):
         - Run [**del-this-tmp-list**](#best-practice-to-update-git-repo-and-search-code) before `gfind-xxx`, or use `find-xxx`.
@@ -369,10 +369,7 @@ Open [user settings](https://code.visualstudio.com/docs/getstarted/settings#_set
 - This use the `.gitignore` file only in top folder of the project, without other kinds/folders of git-ignore files.
 - Omit file/folder exemptions (like `!not-exclude.txt`) as **default** (will **ignore** such git exemptions).
   - Set `msr.omitGitIgnoreExemptions` = `false` to not use git-ignore if found exemptions.
-- Change `skipDotFoldersIfUseGitIgnoreFile` to `false` if some code files in **dot folders** like `".submodules"`:
-  - Method-1: Change for the project only (choose `workspace` when open user settings menu).
-  - Method-2: Change [settings.json](#adjust-your-color-theme-if-result-file-path-folder-color-is-not-clear): Add `msr.{repo-folder-name}.skipDotFoldersIfUseGitIgnoreFile` = `false`.
-    - [Full overriding rule](Add-New-Language-Support-For-Developers.md#full-priority-order-of-config-override-rule) for more details.
+- Auto detect and include(search) dot-folders like `".submodules"` by config `msr.ignorableDotFolderNameRegex`.
 
 Parsing result of `.gitignore` file: see `MSR-Def-Ref` output channel (with `msr.debug` = `true` or launched in debug mode).
 
