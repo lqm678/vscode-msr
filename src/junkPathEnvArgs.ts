@@ -12,6 +12,10 @@ export function getSearchGitSubModuleEnvName(isWindowsTerminal: boolean): string
   return getEnvNameRef(SearchGitSubModuleEnvName, isWindowsTerminal);
 }
 
+export function getTrimmedGitRepoEnvName(isWindowsTerminal: boolean): string {
+  return getEnvNameRef(GitRepoEnvName, isWindowsTerminal);
+}
+
 function getJunkPathEnvValue(repoFolder: string, isForProjectCmdAlias: boolean): [string, string] {
   if (isForProjectCmdAlias && !isNullOrEmpty(repoFolder)) {
     const gitIgnoreInfo = getGitIgnore(repoFolder);
