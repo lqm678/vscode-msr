@@ -190,6 +190,14 @@ Transform each alias/doskey to a script file to help searching or replacing in o
 
 ![cook-command-menu](images/cook-command-menu.png)
 
+Dump 1 or multiple script files into `msr.cmdAlias.saveFolder` - default location:
+
+- Single alias/doskey file: Save to `%USERPROFILE%\` on Windows or `~/` on Linux/MacOS/FreeBSD.
+
+- Multiple script files: Save to `%USERPROFILE%\cmdAlias\` on Windows or `~/cmdAlias/` on Linux/MacOS/FreeBSD.
+
+Auto [**set project specific alias**](#auto-set-command-shortcuts-for-new-terminals) for new terminals in vscode, according to repo [`.gitignore`](#use-git-ignore) plus `.vscode/settings.json`.
+
 ### Best Practice to Update Git Repo and Search Code
 
 - Please use `gpc` or `gpc-sm`/`gpc-sm-reset` to pull/update your git repository.
@@ -235,10 +243,7 @@ Press `F1` if not shown in right-pop menu, then search `msr Cook xxx` as below:
   - **Auto initialized and effect in vscode** when opening new terminals:
     - Skip paths Regex: `--np "skip-by-git-ignore"` (if enabled [git-ignore](#use-git-ignore)).
     - Skip folders Regex: `--nd "default-and-project-exclude"`
-  - If not cooked general nor specific shortcuts (`doskey/alias`):
-    - Unable to use alias **outside** of vscode.
-  - If cooked command shortcuts (`doskey/alias`):
-    - System console (`CMD/bash`) will auto load these `doskey/alias` when opening new consoles.
+  - System console (`CMD/bash`) will auto load these `doskey/alias` when opening new terminals.
 
 #### Multiple Script Files
 
@@ -337,14 +342,6 @@ Every time after changes, auto effect for new console/terminal. Run `update-alia
 See + Use command alias(shortcut) in `MSR-RUN-CMD` on `TERMINAL` tab, or start using in a new command window outside.
 (if running `find-xxx` in vscode terminals, you can `click` the search results to open in vscode.)
 ```
-
-Each time it will write 1 or multiple script files to the folder of `msr.cmdAlias.saveFolder`, if not set:
-
-- Single alias/doskey file: Save to `%USERPROFILE%\` on Windows or `~/` on Linux/MacOS/FreeBSD.
-
-- Multiple script files: Save to `%USERPROFILE%\cmdAlias\` on Windows or `~/cmdAlias/` on Linux/MacOS/FreeBSD.
-
-When you open a new terminal, will [**auto set project specific command shortcuts**](#auto-set-command-shortcuts-for-new-terminals) to use temporary command shortcuts of each project's specific settings plus `.vscode/settings.json` in it's root folder.
 
 ### Switch between General and Project Specific Command Shortcuts
 
