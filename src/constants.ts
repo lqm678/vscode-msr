@@ -54,7 +54,7 @@ export const SearchGitSubModuleEnvName: string = "Git_List_Args";
 export const GitFileListExpirationTimeEnvName: string = "Git_List_Expire";
 export const GitRepoEnvName: string = "GitRepoTmpName";
 export const TmpGitFileListExpiration = "+1day"; // avoid missing update to different repo.
-
+export const SetTmpRepoAliasName = 'set-tmp-repo-name';
 export const GitTmpListFilePrefix = "git-paths-";
 
 export const ReplaceJunkPattern = new RegExp(String.raw`msr -rp \S+\s+\W+${SkipJunkPathEnvArgName}\W*\s+\W+${SkipJunkPathEnvArgValue}\S*`, 'g');

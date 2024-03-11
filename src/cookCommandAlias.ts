@@ -3,11 +3,11 @@ import { IsFileTimeOffsetSupported, IsUniformSlashSupported, RunCommandChecker, 
 import { ProjectToGitFindFileExtraOptionsMap, getFindTopDistributionCommand, getSortCommandText } from "./commands";
 import { getCommandAliasText, getCommonAliasMap, replaceArgForLinuxCmdAlias, replaceArgForWindowsCmdAlias, replaceForLoopVariableOnWindows } from './commonAlias';
 import { getConfigValueByPriorityList, getConfigValueByProjectAndExtension, getConfigValueOfActiveProject, getConfigValueOfProject } from "./configUtils";
-import { CheckReCookAliasFileSeconds, DefaultRepoFolderName, GitFileListExpirationTimeEnvName, GitRepoEnvName, GitTmpListFilePrefix, HomeFolder, IsDebugMode, IsWSL, IsWindows, RunCmdTerminalName, TempStorageFolder, TrimProjectNameRegex, WslCheckingCommand, getAliasFileName, getBashFileHeader, getEnvNameRef, getEnvNameRefRegex, getProjectFolderKey, getRepoFolder, getSkipJunkPathArgs, getTipInfoTemplate, isNullOrEmpty } from "./constants";
+import { CheckReCookAliasFileSeconds, DefaultRepoFolderName, GitFileListExpirationTimeEnvName, GitRepoEnvName, GitTmpListFilePrefix, HomeFolder, IsDebugMode, IsWSL, IsWindows, RunCmdTerminalName, SetTmpRepoAliasName, TempStorageFolder, TrimProjectNameRegex, WslCheckingCommand, getAliasFileName, getBashFileHeader, getEnvNameRef, getEnvNameRefRegex, getProjectFolderKey, getRepoFolder, getSkipJunkPathArgs, getTipInfoTemplate, isNullOrEmpty } from "./constants";
 import { AdditionalFileExtensionMapNames, DefaultRepoFolder, MappedExtToCodeFilePatternMap, MyConfig } from "./dynamicConfig";
 import { FindCommandType, TerminalType } from "./enums";
 import { createDirectory, getFileModifyTime, readTextFile, saveTextToFile } from './fileUtils';
-import { asyncSetJunkEnvForWindows, getJunkEnvCommandForTipFile, getResetJunkPathEnvCommand, getSearchGitSubModuleEnvName, getSkipJunkPathEnvCommand, getTrimmedGitRepoEnvName } from './junkPathEnvArgs';
+import { asyncSetJunkEnvForWindows, getJunkEnvCommandForTipFile, getResetJunkPathEnvCommand, getSearchGitSubModuleEnvName, getSkipJunkPathEnvCommand } from './junkPathEnvArgs';
 import { outputDebug, outputDebugByTime, outputErrorByTime, outputInfo, outputInfoByDebugModeByTime, outputInfoQuiet, outputInfoQuietByTime, outputWarn, outputWarnByTime } from "./outputUtils";
 import { escapeRegExp } from "./regexUtils";
 import { getRunCmdTerminal, runCommandInTerminal, sendCommandToTerminal } from './runCommandUtils';
@@ -98,7 +98,7 @@ function duplicateSearchFileCmdAlias(repoFolder: string, terminalType: TerminalT
   const isWindowsTerminal = isWindowsTerminalOnWindows(terminalType);
   const tmpFileName = isForProjectCmdAlias
     ? GitTmpListFilePrefix + getProjectFolderKey((repoFolderName + '-' + path.basename(path.dirname(repoFolder))))
-    : GitTmpListFilePrefix + getTrimmedGitRepoEnvName(isWindowsTerminal);
+    : GitTmpListFilePrefix + getEnvNameRef(GitRepoEnvName, isWindowsTerminal);
   const powerShellCmdHead = getPowerShellName(terminalType) + ' -Command';
   const sortedCmdKeys = Array.from(cmdAliasMap.keys()).sort();
   const saveAliasFolder = getCmdAliasSaveFolder(true, false, terminalType);
@@ -133,6 +133,7 @@ function duplicateSearchFileCmdAlias(repoFolder: string, terminalType: TerminalT
         }
       }
 
+      const setTmpRepoNameBody = isWindowsTerminal ? `${SetTmpRepoAliasName} && ` : `${SetTmpRepoAliasName}; `;
       let gitFindBody = findBody.replace(/(msr(\.exe)?) -rp\s+(".+?"|\S+)/, checkAndListCommand.trimRight() + ' $1 -w ' + tmpListFile)
         .replace(/\s+(--nd|--np)\s+".+?"\s*/, ' ');
       gitFindBody = setNotCheckInputPathInCommandLine(gitFindBody);
@@ -148,7 +149,12 @@ function duplicateSearchFileCmdAlias(repoFolder: string, terminalType: TerminalT
       }
 
       if (writeToEachFile) {
-        gitFindBody = gitFindBody.replace(findRepoEnvNameRegex, 'tmp');
+        // gitFindBody = gitFindBody.replace(findRepoEnvNameRegex, 'tmp');
+        gitFindBody = setTmpRepoNameBody + gitFindBody;
+      } else {
+        gitFindBody = isWindowsTerminal
+          ? gitFindBody.replace(/^(\w[\w-]+)=/, '$1=' + setTmpRepoNameBody)
+          : gitFindBody.replace(/^alias\s+(\w[\w-]+)=(\W)/, setTmpRepoNameBody + 'alias $1=$2' + setTmpRepoNameBody);
       }
       cmdAliasMap.set(gitFindName, gitFindBody);
 
@@ -421,29 +427,43 @@ export function cookCmdShortcutsOrFile(cookArgs: CookAliasArgs) {
 
   const tmpAliasFolderForTerminal = toTerminalPath(getCmdAliasSaveFolder(false, true, terminalType), terminalType);
   const linuxTmpFolder = isLinuxTerminalOnWindows ? tmpAliasFolderForTerminal : '/tmp';
-  const useThisAliasBody = isWindowsTerminal
+
+  const setTmpRepoNameBody = isWindowsTerminal
     ? String.raw`@for /f "tokens=*" %a in ('git rev-parse --show-toplevel 2^>nul ^|^| echo "%CD%"') do`
     + String.raw` @for /f "tokens=*" %b in ('msr -z "%a" -t ".*?([^\\/]+?)\s*$" -o "\1" -aPAC ^|`
-    + String.raw` msr -t "${TrimProjectNameRegex.source}" -o "-" -aPAC') do`
-    + String.raw` @call "%tmp%\%b.${projectAliasFileSuffix}"`
-    : String.raw`thisFile=${linuxTmpFolder}/$(echo $(git rev-parse --show-toplevel 2>/dev/null || echo "$PWD") |`
-    + String.raw` msr -t ".*?([^/]+?)\s*$" -o "\1" -aPAC | msr -t "${TrimProjectNameRegex.source}" -o "-" -aPAC).${projectAliasFileSuffix};`
-    + String.raw` source $thisFile`;
+    + String.raw` msr -t "${TrimProjectNameRegex.source}" -o "-" -aPAC') do @set "${GitRepoEnvName}=%b"`
+    :
+    String.raw`export ${GitRepoEnvName}=$(echo $(git rev-parse --show-toplevel 2>/dev/null || echo "$PWD") |`
+    + String.raw` msr -t ".*?([^/]+?)\s*$" -o "\1" -aPAC | msr -t "${TrimProjectNameRegex.source}" -o "-" -aPAC)`;
+
+  cmdAliasMap.set(SetTmpRepoAliasName, getCommandAliasText(SetTmpRepoAliasName, setTmpRepoNameBody, false, terminalType, args.WriteToEachFile, false));
+
+  const tmpRepoEnvValue = getEnvNameRef(GitRepoEnvName, isWindowsTerminal);
+  const tmpAliasPathValue = isWindowsTerminal
+    ? `"%tmp%\\${tmpRepoEnvValue}.${projectAliasFileSuffix}"`
+    : `${linuxTmpFolder}/${tmpRepoEnvValue}.${projectAliasFileSuffix}`;
+
+  const useThisAliasBody = isWindowsTerminal
+    ? String.raw`@${SetTmpRepoAliasName} & @call ${tmpAliasPathValue}`
+    : String.raw`${SetTmpRepoAliasName}; source ${tmpAliasPathValue}`;
   cmdAliasMap.set('use-this-alias', getCommandAliasText('use-this-alias', useThisAliasBody, isWindowsTerminal, terminalType, args.WriteToEachFile, false));
 
   const removeThisAliasBody = isWindowsTerminal
-    ? useThisAliasBody.replace(`%b.${projectAliasFileSuffix}`, GitTmpListFilePrefix + '%b')
-      .replace(/call (\S+)/g, 'if exist $1 ( del $1 && echo Deleted tmp list file: $1 )')
-    : useThisAliasBody.replace(`${linuxTmpFolder}/`, '/tmp/' + GitTmpListFilePrefix).replace(`.${projectAliasFileSuffix}`, '')
-      .replace(/source (\S+)/g, '[ -f $1 ] && rm $1 && echo Deleted tmp list file: $1');
+    ? String.raw`@${SetTmpRepoAliasName} & @if exists ${tmpAliasPathValue} ( del ${tmpAliasPathValue} && echo Deleted tmp list file: ${tmpAliasPathValue} )`
+    : String.raw`${SetTmpRepoAliasName}; tmpFilePath=${tmpAliasPathValue}; [ -f $tmpFilePath ] && rm $tmpFilePath && echo Deleted tmp list file: $tmpFilePath`;
+  // ?useThisAliasBody.replace(`%b.${projectAliasFileSuffix}`, GitTmpListFilePrefix + '%b')
+  // .replace(/call (\S+)/g, 'if exist $1 ( del $1 && echo Deleted tmp list file: $1 )')
+  // : useThisAliasBody.replace(`${linuxTmpFolder}/`, '/tmp/' + GitTmpListFilePrefix).replace(`.${projectAliasFileSuffix}`, '')
+  // .replace(/source (\S+)/g, '[ -f $1 ] && rm $1 && echo Deleted tmp list file: $1');
   cmdAliasMap.set('del-this-tmp-list', getCommandAliasText('del-this-tmp-list', removeThisAliasBody, false, terminalType, args.WriteToEachFile, false));
 
   const shouldCheckUpdateAlias = isWeeklyCheckTime() || IsDebugMode;
-  ['use-this-alias', 'del-this-tmp-list', 'add-user-path', 'reload-env', 'reset-env'].forEach(name => {
+  [SetTmpRepoAliasName, 'use-this-alias', 'del-this-tmp-list', 'add-user-path', 'reload-env', 'reset-env'].forEach(name => {
     let scriptBody = cmdAliasMap.get(name) as string;
     if (isNullOrEmpty(scriptBody)) {
       return;
     }
+
     if (!args.WriteToEachFile) {
       if (isWindowsTerminal) {
         scriptBody = scriptBody.replace(/^\s*\w+[\w-]*=\s*/, '');
