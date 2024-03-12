@@ -295,11 +295,15 @@ function asyncAddUserPathToEnvForWindows(generalScriptFilesFolder: string, rawWi
   }
 }
 
-function getRegisterDoskeyCommand() {
+function getRegisterDoskeyCommand(isRegister = true, silent = false) {
   const aliasFilePath = getGeneralCmdAliasFilePath(TerminalType.CMD);
   const displayPath = toTerminalPath(aliasFilePath, TerminalType.CMD);
   const refinedPath = displayPath.includes(' ') ? '\\"' + displayPath + '\\"' : displayPath;
-  return 'REG ADD "HKEY_CURRENT_USER\\Software\\Microsoft\\Command Processor" /v Autorun /d "DOSKEY /MACROFILE=' + refinedPath + '" /f > nul';
+  const keyPath = String.raw`"HKEY_CURRENT_USER\Software\Microsoft\Command Processor"`;
+  const tail = silent ? " > nul" : "";
+  return isRegister
+    ? `REG ADD ${keyPath} /v Autorun /d "DOSKEY /MACROFILE=${refinedPath}" /f` + tail
+    : `REG DELETE ${keyPath} /v Autorun /f` + tail;
 }
 
 export class CookAliasArgs {
@@ -400,7 +404,8 @@ export function cookCmdShortcutsOrFile(cookArgs: CookAliasArgs) {
   let allCmdAliasText = getBashFileHeader(isWindowsTerminal) + aliasHeadText;
   if (args.ForProject && !args.WriteToEachFile) {
     if (isWindowsTerminal) {
-      allCmdAliasText += getRegisterDoskeyCommand() + newLine;
+      ChildProcess.exec(getRegisterDoskeyCommand());
+      // allCmdAliasText += "@REM " + getRegisterDoskeyCommand(false) + newLine;
     } else {
       const initLinuxScriptPath = getInitLinuxScriptDisplayPath(terminalType);
       allCmdAliasText += getLoadAliasFileCommand(initLinuxScriptPath, false) + newLine;
