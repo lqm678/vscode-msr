@@ -128,7 +128,7 @@ function duplicateSearchFileCmdAlias(repoFolder: string, terminalType: TerminalT
           if (isWindowsTerminal) {
             checkAndListCommand = '( ' + checkTime + ' 2>nul | msr -t "^Matched 1" >nul && ' + listFileCommand + ' ) & ';
           } else {
-            checkAndListCommand = checkTime + ' 2>/dev/null -PAC 1>&2; [ $? -ne 1 ] && ' + listFileCommand + '; '
+            checkAndListCommand = checkTime + ' 2>/dev/null -PAC -H 0; [ $? -ne 1 ] && ' + listFileCommand + '; '
           }
         }
       }
