@@ -157,6 +157,7 @@ You can set environment variable **MSR_COLORS** to [change color-groups](https:/
 ## Avoid Security Software Downgrade Search Performance on Windows
 
 If you cannot get search results **in 1~2 seconds** for just **10000 code files**:
+
 - Follow [official Windows doc](https://support.microsoft.com/en-us/help/4028485/windows-10-add-an-exclusion-to-windows-security) to add exclusion.
 - Same with using alias `trust-exe` (run as `Administrator` in a `new` CMD window):
   - Run "**trust-exe** `msr,nin`" (input exe `name` or `title` or `path`).
@@ -286,6 +287,13 @@ Many other [**common shortcuts**](/src/commonAlias.ts) like (run `alias` to see 
   - Run **use-this-alias** to load alias/env for current git repo.
 - If using alias(like `find-spring-ref`) in a **nested command** (like `for/while-loop` or `command|pipe`), or **script files** (like `*.bat/cmd` or `*.sh`)
   - Use **full-name** (like `find-spring-ref.cmd`) or **full path** (like `~/cmdAlias/find-spring-ref`).
+
+#### If You Want to Remove Command Shortcuts from System when Uninstalling vscode-msr
+
+- Windows command to remove registration of [doskey file](#make-command-shortcuts-to-search-or-replace-in-or-out-of-vscode) (default: `%USERPROFILE%\msr-cmd-alias.doskeys`):
+  - `REG DELETE "HKEY_CURRENT_USER\Software\Microsoft\Command Processor" /v Autorun /f`
+- Linux/MacOS/FreeBSD + MinGW/Cygwin command (default file: `~/msr-cmd-alias.bashrc`):
+  - `msr -p ~/.bashrc -t "^source ~/msr-cmd-alias.bashrc" -o "" -R`
 
 ### Try rgfind-xxx to Search Multiple Git Repositories
 
@@ -437,6 +445,7 @@ If you want to support unknown languages, do **anyone** of below:
 [Currently support well](#current-support-to-finding-definition-and-references) for: `C#`, `C++/C`, `Python`, `PowerShell`, `Batch/Bash`, `Java`, etc.
 
 This extension auto **disabled itself** finding definition for some languages which has good official extension support:
+
 - Change config **msr.default.autoDisableFindDefinitionPattern** as your need.
 - You can [temporarily toggle](#get-the-best-combined-power) enabling this extension when official extension got problems.
 - Permanently update: Change **msr.disable.extensionPattern** value.
