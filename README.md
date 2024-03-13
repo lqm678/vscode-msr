@@ -56,7 +56,7 @@ You can start [**search**](#search-files-with-rich-filters) + [**replace**](#rep
 
 - Got search results in **1~3 seconds** for 20000+ code files (on hard-drives, **SSD** maybe faster) after first time (cost 10~30+ seconds).
 
-- Fast find **definitions** + **references** for **all types** of coding languages across **multiple related repositories**.
+- Fast find **definitions** + **references** for **all types** of coding languages across [**multiple related repositories**](#extra-paths-settings).
 
 - **Self-reliance**: Learn/Ramp-up faster **by yourself** -- [**Code Mining without or with Little Knowledge**](#code-mining-without-or-with-little-knowledge).
 
@@ -452,11 +452,10 @@ This extension auto **disabled itself** finding definition for some languages wh
 
 **Two methods** to support a new language. (If you're a **developer**/**contributor** see [**here**](Add-New-Language-Support-For-Developers.md), welcome!)
 
-### File to Add New Language Settings
+Open your [personal settings file](https://code.visualstudio.com/docs/getstarted/settings#_settings-file-locations) with `code` or other tools like:
 
-- Open your [personal settings file](https://code.visualstudio.com/docs/getstarted/settings#_settings-file-locations) with `code` or other tools like:
-  - Windows: code `%APPDATA%\Code\User\settings.json`
-  - Linux: code `$HOME/.config/Code/User/settings.json`
+- Windows: code `%APPDATA%\Code\User\settings.json`
+- Linux: code `$HOME/.config/Code/User/settings.json`
 
 Take **finding definition** for **batch** files (`*.bat` and `*.cmd`) as an example (for **normal users**):
 
@@ -486,7 +485,7 @@ See [**here**](Add-New-Language-Support-For-Developers.md#additional-explanation
   "msr.batch.definition": "^\\s*:\\s*(%1)\\b|(^|\\s)set\\s+(/a\\s+)?\\\"?(%1)="
 ```
 
-### Simple Way to Add New Finding Alias
+### Simplest Way to Add New Finding Alias
 
 Change/Add file extension names to config `msr.fileExtensionMapNames`:
 
